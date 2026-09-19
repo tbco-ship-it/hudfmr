@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Data & method | {{ site }}{% endblock %}
+{% block content %}<h1>Data & method</h1><div class="prose">
+<p><b>Source.</b> HUD User, <a href="{{ source.fmr }}" rel="noopener">Fair Market Rents</a>: the full FMR history file ({{ source.fmr_file }}) and the {{ fy }} Small Area FMR schedule ({{ source.safmr_file }}), downloaded {{ source.fetched }}. Public domain.</p>
+<p><b>Areas.</b> One page per FMR row: 3,161 counties and county equivalents plus 1,603 New England towns that HUD rates individually. Counties inside a metro share the metro FMR; the page names the metro area it belongs to.</p>
+<p><b>ZIP codes.</b> One page per ZIP with a published SAFMR. A ZIP that crosses two FMR areas gets both figures. "% vs area" compares the ZIP's SAFMR with the FMR of the first county in its area.</p>
+<p><b>Change.</b> Percent change is {{ fy }} versus {{ fy_prev }} for the same row. The 11-year table is the 2-bedroom FMR each fiscal year, as published at the time (not revised).</p>
+<p><b>Payment standards.</b> 90% and 110% of FMR/SAFMR, HUD's basic range. Your housing authority's actual standard is on its website.</p>
+<p><b>Refresh.</b> HUD publishes the next fiscal year's FMRs in late summer; the site is rebuilt when they land.</p>
+</div>{% endblock %}

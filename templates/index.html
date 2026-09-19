@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Fair Market Rent by county and ZIP code — HUD {{ fy }} FMR lookup, studio to 4-bedroom | {{ site }}{% endblock %}
+{% block head %}<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"{{ site }}","applicationCategory":"FinanceApplication","inLanguage":"en","url":"{{ origin }}{{ base }}","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
+<script>document.documentElement.classList.add('landing')</script>{% endblock %}
+{% block content %}
+<div class="stage" id="stage">
+<section class="hero">
+  <h1>What's the fair market rent for my area?</h1>
+  <p>Type a ZIP code or county. You get HUD's {{ fy }} Fair Market Rent for studio through 4-bedroom units, how much it moved from {{ fy_prev }}, and the 90–110% payment-standard range a housing authority can set for a Section 8 voucher. {{ '{:,}'.format(n_areas) }} counties and towns, {{ '{:,}'.format(n_zips) }} ZIP codes.</p>
+</section>
+
+<section class="calc-grid">
+<div class="calc card" id="calc">
+  <h2 class="card-title">Your area</h2>
+  <label class="field">ZIP code or county
+    <input id="q" class="pick search" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="q-menu" autocomplete="off" inputmode="text" placeholder="e.g. 90210, Harris County, Cook"><ul class="menu" id="q-menu" role="listbox" hidden></ul>
+  </label>
+  <div class="seg full" id="br" role="group" aria-label="Bedrooms"><button type="button" data-b="0" aria-pressed="false">Studio</button><button type="button" data-b="1" aria-pressed="false">1 BR</button><button type="button" data-b="2" aria-pressed="true">2 BR</button><button type="button" data-b="3" aria-pressed="false">3 BR</button><button type="button" data-b="4" aria-pressed="false">4 BR</button></div>
+  <p class="muted small">A ZIP shows its Small Area FMR where HUD publishes one; a county shows the metro or county FMR. Both are gross rent, utilities included.</p>
+  <button type="button" class="last" id="last" hidden><span>Last lookup</span><b id="last-name"></b></button>
+</div>
+<div id="result" class="result" aria-live="polite"></div>
+</section>
+</div>
+
+<div class="below" id="below">
+<div class="ad-slot"><!-- ad: home --></div>
+
+<section class="grid2">
+  <div class="sec">
+    <div class="sec-h"><h2>Highest 2-bedroom FMRs</h2><a href="{{ base }}rankings/highest/">Top 100</a></div>
+    <ul class="list">{% for a in top %}<li><a href="{{ base }}{{ a.path }}">{{ a.name }}, {{ a.st }}<span class="meta">{{ a.fmr[2]|usd }}</span></a></li>{% endfor %}</ul>
+  </div>
+  <div class="sec">
+    <div class="sec-h"><h2>Biggest jumps from {{ fy_prev }}</h2><a href="{{ base }}rankings/biggest-increases/">Top 60</a></div>
+    <ul class="list">{% for a in up %}<li><a href="{{ base }}{{ a.path }}">{{ a.name }}, {{ a.st }}<span class="meta">+{{ a.chg2 }}% · {{ a.fmr[2]|usd }}</span></a></li>{% endfor %}</ul>
+  </div>
+</section>
+
+<div class="sec"><div class="sec-h"><h2>By state</h2><a href="{{ base }}states/">All states</a></div>
+<ul class="list">{% for s in state_list[:12] %}<li><a href="{{ base }}{{ s.path }}">{{ s.name }}<span class="meta">median 2BR {{ s.med2|usd }} · {{ s.areas|length }} areas</span></a></li>{% endfor %}</ul></div>
+
+<section class="prose">
+  <h2>What the number is</h2>
+  <p>Fair Market Rent is HUD's estimate of the 40th-percentile gross rent for a modest, recently rented unit in an area — the rent at which 40% of units go for less. It resets every October 1 and is the yardstick for Housing Choice (Section 8) vouchers, LIHTC rent caps and several state programs. The U.S. median county 2-bedroom FMR for {{ fy }} is {{ us_med2|usd }}. <a href="{{ base }}guide/what-is-fair-market-rent/">Read the full explainer</a></p>
+  <h2>Why the ZIP number differs from the county's</h2>
+  <p>In most large metros HUD now publishes Small Area FMRs by ZIP code, so a voucher stretches further in a higher-rent ZIP. Where a ZIP has no SAFMR, the metro-wide FMR applies. Either way the housing authority sets a payment standard between 90% and 110% of the figure, and your share of rent depends on that standard, not the FMR itself. <a href="{{ base }}guide/payment-standard/">How payment standards work</a></p>
+</section>
+</div>
+<script src="{{ base }}static/app.js?v={{ v }}" defer></script>
+{% endblock %}

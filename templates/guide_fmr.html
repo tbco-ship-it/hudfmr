@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}What is Fair Market Rent? How HUD sets FMR, who uses it, and what it doesn't mean | {{ site }}{% endblock %}
+{% block description %}Fair Market Rent is HUD's 40th-percentile gross rent estimate for an area, updated every October 1. How it is calculated, the programs that depend on it (Section 8, LIHTC, HOME), Small Area FMRs by ZIP, and common misreadings.{% endblock %}
+{% block content %}
+<nav class="crumbs"><a href="{{ base }}">Home</a> › What is Fair Market Rent?</nav>
+<h1>What is Fair Market Rent?</h1>
+<div class="prose">
+<h2>Definition</h2>
+<p>Fair Market Rent (FMR) is the U.S. Department of Housing and Urban Development's estimate of the <b>40th-percentile gross rent</b> for standard-quality rental units in a metropolitan area or non-metro county — the rent below which 40% of recently rented units fall. "Gross" means rent plus tenant-paid utilities except telephone, cable and internet. HUD publishes one figure per bedroom count (studio through four bedrooms) and resets them each fiscal year on October 1.</p>
+<h2>How HUD calculates it</h2>
+<p>The base is the American Community Survey's 5-year estimate of gross rents for units occupied by "recent movers" (moved in within the past two years), which skews toward current market rents. HUD then trends the number forward using more recent rent data — private rent indices and, since FY2024, its own rent surveys — and applies a state minimum so rural counties are not set below the state's non-metro floor. Areas can request a re-survey if they believe the figure is too low.</p>
+<h2>Small Area FMRs</h2>
+<p>In metros where rents vary sharply between neighborhoods, HUD publishes Small Area FMRs by ZIP code. Housing authorities in designated metros must use them; elsewhere they may opt in. The effect is that a voucher pays more in a high-rent ZIP and less in a low-rent one, instead of one metro-wide number that only worked in cheaper neighborhoods.</p>
+<h2>Who uses FMR</h2>
+<ul>
+<li><b>Housing Choice Vouchers (Section 8)</b>: the housing authority's payment standard is 90–110% of FMR (or SAFMR). <a href="{{ base }}guide/payment-standard/">Details</a>.</li>
+<li><b>Low-Income Housing Tax Credit and HOME</b>: rent caps for assisted units reference FMR or area median income limits.</li>
+<li><b>Project-based Section 8, HUD-VASH, Emergency Housing Vouchers</b>, and many state and local rental-assistance programs.</li>
+<li><b>Court and relocation formulas</b>: several states use FMR to set relocation assistance or "reasonable rent" in disputes.</li>
+</ul>
+<h2>What FMR is not</h2>
+<p>It is not a rent-control ceiling for private landlords, not the average rent (the 40th percentile sits below the median), and not what a voucher pays — that is the payment standard minus the tenant's share. A landlord can charge above FMR; a voucher tenant then pays the gap, up to 40% of income at lease-up.</p>
+</div>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Fair market rent by state {{ fy }} — median 2-bedroom FMR in all 50 states | {{ site }}{% endblock %}
+{% block description %}Median county 2-bedroom Fair Market Rent for every state, {{ fy }}, with the lowest and highest county in each.{% endblock %}
+{% block content %}
+<nav class="crumbs"><a href="{{ base }}">Home</a> › States</nav>
+<h1>Fair market rent by state</h1>
+<p class="prose">Median of county-level 2-bedroom FMRs, {{ fy }}. U.S. median {{ us_med2|usd }}.</p>
+<div class="ad-slot"><!-- ad: states --></div>
+<ul class="list fee">{% for s in state_list|sort(attribute='med2', reverse=True) %}<li><a href="{{ base }}{{ s.path }}"><span class="nm">{{ s.name }}<small class="rule">{{ s.min.fmr[2]|usd }} ({{ s.min.name }}) – {{ s.max.fmr[2]|usd }} ({{ s.max.name }}) · {{ s.areas|length }} areas</small></span><span class="meta"><b>{{ s.med2|usd }}</b></span></a></li>{% endfor %}</ul>
+{% endblock %}
