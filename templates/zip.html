@@ -13,7 +13,7 @@
   <p class="sheet-title">Payment standard {{ z.ps90[2]|usd }}–{{ z.ps110[2]|usd }} for a 2-bedroom voucher</p>
   <p class="sheet-text">{% if z.vs_area[2] is not none and z.vs_area[2] != 0 %}{{ '+' if z.vs_area[2] > 0 else '' }}{{ z.vs_area[2] }}% versus the area-wide FMR of {{ z.areas[0].fmr[2]|usd }} — {% if z.vs_area[2] > 0 %}a voucher stretches further here than the metro average{% else %}rents here sit below the metro average{% endif %}.{% else %}Same as the area-wide FMR.{% endif %}</p>
   {% if loop.first %}<div class="seg full" id="br" role="group" aria-label="Bedrooms">{% for b in range(5) %}<button type="button" data-b="{{ b }}" aria-pressed="{{ 'true' if b == 2 else 'false' }}">{{ ['Studio','1 BR','2 BR','3 BR','4 BR'][b] }}</button>{% endfor %}</div>{% endif %}
-  <table class="tbl spec mini"><thead><tr><th>Unit</th><th>SAFMR</th><th>90% standard</th><th>110% standard</th></tr></thead><tbody>
+  <table class="tbl spec mini"><thead><tr><th>Unit</th><th>SAFMR</th><th>90%</th><th>110%</th></tr></thead><tbody>
     {% for b in range(5) %}<tr><th>{{ BR[b] }}</th><td>{{ z.safmr[b]|usd }}</td><td>{{ z.ps90[b]|usd }}</td><td>{{ z.ps110[b]|usd }}</td></tr>{% endfor %}
   </tbody></table>
   <p class="sheet-actions">{% for a in z.areas[:3] %}<a class="next" href="{{ base }}{{ a.path }}">{{ a.name }}, {{ a.st }} FMR</a>{% endfor %}</p>
