@@ -61,7 +61,7 @@
   say('Loading county search…');
   const areasReady = (async () => {
     for (let attempt = 0; ; attempt++) {
-      try { const r = await fetch(base + 'static/index.json?v=' + v); if (!r.ok) throw new Error(r.status); const IDX = await r.json(); A = IDX.areas.map(a => ({ kind: 'area', name: a[0], st: a[1], slug: a[2], area: a[3], fmr: a[4], prev: a[5], town: !!a[6], state: a[7] || '', q: norm([a[0], a[1], a[3], a[7] || ''].join(' ')) })); say(''); return; }
+      try { const r = await fetch(base + 'static/index.json?v=' + v); if (!r.ok) throw new Error(r.status); const IDX = await r.json(); A = IDX.areas.map(a => ({ kind: 'area', name: a[0], st: a[1], slug: a[2], area: a[3], fmr: a[4], prev: a[5], town: !!a[6], state: a[7] || '', qn: norm(a[0] + ' ' + a[1] + ' ' + (a[7] || '')), q: norm([a[0], a[1], a[3], a[7] || ''].join(' ')) })); say(''); return; }
       catch (e) { if (attempt < 2) { await new Promise(r => setTimeout(r, 1200 * (attempt + 1))); continue; } say('County search is unavailable — ZIP search still works, or browse by state.'); return; }
     }
   })();
@@ -85,7 +85,8 @@
       if (nq.length < 3) { items = []; menu.innerHTML = '<li class="empty">Keep typing the ZIP code…</li>'; menu.hidden = false; input.setAttribute('aria-expanded', 'true'); input.removeAttribute('aria-activedescendant'); return; }
       try { const part = await loadZips(nq[0]); if (my !== seq || document.activeElement !== input) return; items = part.filter(z => z.zip.startsWith(nq)).slice(0, 8); empty = 'No Small Area FMR for this ZIP — try the county name.'; }
       catch (e) { if (my !== seq || document.activeElement !== input) return; items = []; empty = 'Couldn\'t load ZIP rents. Try again or browse by state.'; }
-    } else { if (!A.length) await areasReady; if (my !== seq || document.activeElement !== input) return; const tokens = nq.split(' ').filter(Boolean); items = tokens.length ? A.filter(a => tokens.every(t => a.q.includes(t))).sort((a, b) => a.town - b.town || (b.fmr[2] || 0) - (a.fmr[2] || 0)).slice(0, 8) : []; }
+    } else { if (!A.length) await areasReady; if (my !== seq || document.activeElement !== input) return; const tokens = nq.split(' ').filter(Boolean); const rank = a => a.qn.startsWith(nq) ? 0 : tokens.every(t => a.qn.includes(t)) ? 1 : 2;  // the place's own name before places that only share its metro area name
+      items = tokens.length ? A.filter(a => tokens.every(t => a.q.includes(t))).sort((a, b) => rank(a) - rank(b) || a.town - b.town || (b.fmr[2] || 0) - (a.fmr[2] || 0)).slice(0, 8) : []; }
     menu.innerHTML = items.length ? items.map((c, i) => `<li role="option" id="q-option-${i}" data-i="${i}" aria-selected="${i === active}">${c.kind === 'zip' ? `ZIP ${c.zip}<small class="muted"> ${c.area}</small>` : `${c.name}, ${c.st}<small class="muted"> ${c.town ? 'town · ' : ''}2BR ${usd(c.fmr[2])}</small>`}</li>`).join('') : `<li class="empty">${empty}</li>`;
     menu.hidden = false; input.setAttribute('aria-expanded', 'true');
     if (active >= 0 && items[active]) { input.setAttribute('aria-activedescendant', `q-option-${active}`); $(`q-option-${active}`)?.scrollIntoView({ block: 'nearest' }); } else input.removeAttribute('aria-activedescendant');
