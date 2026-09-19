@@ -28,7 +28,7 @@
 <ul class="list">{% for x in near %}<li><a href="{{ base }}{{ x.path }}">{{ x.name }}<span class="meta">{{ x.fmr[2]|usd }}</span></a></li>{% endfor %}</ul></div>{% endif %}
 <section class="prose">
   <h2>2-bedroom FMR, last 11 years</h2>
-  <table class="tbl"><thead><tr>{% for y in a.hist2br %}<th>{{ y[2:] }}</th>{% endfor %}</tr></thead><tbody><tr>{% for y, val in a.hist2br.items() %}<td>{{ val|usd }}</td>{% endfor %}</tr></tbody></table>
+  <ul class="hist">{% for y, val in a.hist2br.items() %}<li><span>FY{{ y[2:] }}</span><b>{{ val|usd }}</b></li>{% endfor %}</ul>
   <p>HUD's fiscal year runs October to September, so the {{ fy }} figure applies from {{ source.effective }}. The FMR is the 40th-percentile gross rent (rent plus tenant-paid utilities) for standard-quality units, from Census ACS data trended forward with recent rent surveys. It is not a rent cap for private landlords. <a href="{{ base }}methodology/">Data & method</a></p>
 </section>
 <script src="{{ base }}static/app.js?v={{ v }}" defer></script>
