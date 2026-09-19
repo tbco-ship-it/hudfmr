@@ -660,3 +660,15 @@ header.top nav a{flex:none}
 .hist{display:flex;flex-wrap:wrap;gap:8px;list-style:none;padding:0;margin:0 0 14px}
 .hist li{display:flex;flex-direction:column;align-items:center;min-width:64px;padding:8px 10px;background:var(--surface);border-radius:12px;font-size:.85rem}
 .hist li span{color:var(--muted);font-size:.75rem}.hist li b{font-weight:700}
+
+/* review round 1 */
+.sheet .tbl.rent-table{table-layout:fixed}
+.sheet .tbl.rent-table th,.sheet .tbl.rent-table td{width:auto;padding:11px 8px}
+.sheet .tbl.rent-table th:first-child{width:31%;text-align:left}
+.sheet .tbl.rent-table th:not(:first-child),.sheet .tbl.rent-table td{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.sheet .tbl.rent-table caption{text-align:left;padding:0 0 6px;font-weight:500}
+@media (max-width:480px){.sheet .tbl.rent-table th,.sheet .tbl.rent-table td{padding:10px 4px;font-size:13px}.sheet .tbl.rent-table tbody th{min-width:0;white-space:normal}
+  .sheet{padding:20px 16px}.sheet-num .pct{flex-basis:100%;font-size:16px}.seg.full button{padding-inline:4px;font-size:13px}.hist{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}.hist li{min-width:0}}
+.sheet.quiet{background:var(--surface);background-image:none}
+#result .rv,#result.rv{opacity:1;transform:none;filter:none;transition:none}
+details.src summary{cursor:pointer;color:var(--text-2);font-weight:600;font-size:.92rem;padding:8px 0}

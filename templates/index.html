@@ -5,8 +5,8 @@
 {% block content %}
 <div class="stage" id="stage">
 <section class="hero">
-  <h1>What's the fair market rent for my area?</h1>
-  <p>Type a ZIP code or county. You get HUD's {{ fy }} Fair Market Rent for studio through 4-bedroom units, how much it moved from {{ fy_prev }}, and the 90–110% payment-standard range a housing authority can set for a Section 8 voucher. {{ '{:,}'.format(n_areas) }} counties and towns, {{ '{:,}'.format(n_zips) }} ZIP codes.</p>
+  <h1>Find fair market rent for your ZIP code.</h1>
+  <p>Enter a ZIP code or county, then choose the bedroom size. HUD's {{ fy }} rents (effective {{ source.effective }}) for {{ '{:,}'.format(n_areas) }} counties and towns and {{ '{:,}'.format(n_zips) }} ZIP codes.</p>
 </section>
 
 <section class="calc-grid">
@@ -15,8 +15,9 @@
   <label class="field">ZIP code or county
     <input id="q" class="pick search" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="q-menu" autocomplete="off" inputmode="text" placeholder="e.g. 90210, Harris County, Cook"><ul class="menu" id="q-menu" role="listbox" hidden></ul>
   </label>
+  <p id="search-status" role="status" aria-live="polite" class="muted small" hidden></p>
   <div class="seg full" id="br" role="group" aria-label="Bedrooms"><button type="button" data-b="0" aria-pressed="false">Studio</button><button type="button" data-b="1" aria-pressed="false">1 BR</button><button type="button" data-b="2" aria-pressed="true">2 BR</button><button type="button" data-b="3" aria-pressed="false">3 BR</button><button type="button" data-b="4" aria-pressed="false">4 BR</button></div>
-  <p class="muted small">A ZIP shows its Small Area FMR where HUD publishes one; a county shows the metro or county FMR. Both are gross rent, utilities included.</p>
+  <p class="muted small">A ZIP shows its Small Area FMR where HUD publishes one; a county shows the metro or county FMR. Both are gross rent, utilities included — HUD benchmarks, not your PHA's adopted payment standard. <a href="{{ base }}states/">Browse by state</a></p>
   <button type="button" class="last" id="last" hidden><span>Last lookup</span><b id="last-name"></b></button>
 </div>
 <div id="result" class="result" aria-live="polite"></div>
@@ -42,9 +43,9 @@
 
 <section class="prose">
   <h2>What the number is</h2>
-  <p>Fair Market Rent is HUD's estimate of the 40th-percentile gross rent for a modest, recently rented unit in an area — the rent at which 40% of units go for less. It resets every October 1 and is the yardstick for Housing Choice (Section 8) vouchers, LIHTC rent caps and several state programs. The U.S. median county 2-bedroom FMR for {{ fy }} is {{ us_med2|usd }}. <a href="{{ base }}guide/what-is-fair-market-rent/">Read the full explainer</a></p>
+  <p>Fair Market Rent is HUD's estimate of the 40th-percentile gross rent for a modest, recently rented unit in an area — the rent at which 40% of units go for less. It resets every October 1 and is the yardstick for Housing Choice (Section 8) vouchers and several state programs (LIHTC rent limits use HUD's separate MTSP income limits). The U.S. median county 2-bedroom FMR for {{ fy }} is {{ us_med2|usd }}. <a href="{{ base }}guide/what-is-fair-market-rent/">Read the full explainer</a></p>
   <h2>Why the ZIP number differs from the county's</h2>
-  <p>In most large metros HUD now publishes Small Area FMRs by ZIP code, so a voucher stretches further in a higher-rent ZIP. Where a ZIP has no SAFMR, the metro-wide FMR applies. Either way the housing authority sets a payment standard between 90% and 110% of the figure, and your share of rent depends on that standard, not the FMR itself. <a href="{{ base }}guide/payment-standard/">How payment standards work</a></p>
+  <p>In most large metros HUD now publishes Small Area FMRs by ZIP code, so a voucher stretches further in a higher-rent ZIP. Where a ZIP has no SAFMR, the metro-wide FMR applies. Either way the housing authority sets its payment standard, normally between 90% and 110% of the figure (exceptions exist), and your share of rent depends on that standard and your income, not the FMR itself. <a href="{{ base }}guide/payment-standard/">How payment standards work</a></p>
 </section>
 </div>
 <script src="{{ base }}static/app.js?v={{ v }}" defer></script>

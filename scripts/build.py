@@ -77,6 +77,9 @@ def main():
     v = h.hexdigest()[:8]
     env = Environment(loader=FileSystemLoader(ROOT / "templates"), autoescape=select_autoescape(["html"]))
     env.filters["usd"] = usd
+    fy_number = int(source["fy"][2:])
+    effective_date = dt.date(fy_number - 1, 10, 1)
+    env.globals.update(upcoming=today < effective_date, fmr_period=f"{fy_number - 1}-10-01/{fy_number}-09-30")
     env.globals.update(site=SITE, base=base, origin=origin, today=today.isoformat(), v=v, adsense_pub=args.adsense_pub, BR=BR,
                        states=states, state_list=state_list, n_areas=len(areas), n_zips=len(by_zip), source=source, us_med2=us_med2, fy=source["fy"], fy_prev=f"FY{int(source['fy'][2:]) - 1}")
 
@@ -119,8 +122,7 @@ def main():
         for a in s["areas"]:
             same = [x for x in s["areas"] if x is not a and x["area_code"] == a["area_code"]][:12]
             near = sorted([x for x in s["areas"] if x is not a and x["fmr"][2]], key=lambda x: abs(x["fmr"][2] - (a["fmr"][2] or 0)))[:6]
-            zrows = [by_zip[zc][0] for zc in a["zips"] if by_zip.get(zc)]
-            zrows = [z for z in zrows if z["area_code"] == a["area_code"]]
+            zrows = [z for zc in a["zips"] for z in by_zip.get(zc, []) if z["area_code"] == a["area_code"]]
             write(a["path"], "area.html", s=s, a=a, same=same, near=near, zrows=zrows)
     for zc, lst in by_zip.items():
         write(f"zip/{zc}/", "zip.html", zc=zc, lst=lst)

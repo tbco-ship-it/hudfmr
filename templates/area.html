@@ -1,35 +1,35 @@
 {% extends "base.html" %}
 {% set two = a.fmr[2] %}
-{% block title %}{{ a.name }}, {{ a.st }} Fair Market Rent {{ fy }} — 2BR {{ two|usd }}{% if a.chg2 is not none %} ({{ '+' if a.chg2 > 0 else '' }}{{ a.chg2 }}%){% endif %}, studio to 4BR & payment standards | {{ site }}{% endblock %}
-{% block description %}HUD {{ fy }} Fair Market Rent for {{ a.name }}, {{ s.name }} ({{ a.area }}): studio {{ a.fmr[0]|usd }}, 1BR {{ a.fmr[1]|usd }}, 2BR {{ two|usd }}, 3BR {{ a.fmr[3]|usd }}, 4BR {{ a.fmr[4]|usd }}, effective {{ source.effective }}. Change from {{ fy_prev }}, 90–110% voucher payment-standard range{% if zrows %}, and Small Area FMRs for {{ zrows|length }} ZIP codes{% endif %}.{% endblock %}
-{% block head %}<script type="application/ld+json">{{ {"@context":"https://schema.org","@type":"Dataset","name":a.name ~ ", " ~ a.st ~ " Fair Market Rent " ~ fy,"description":"HUD " ~ fy ~ " FMR, gross rent by bedroom count","spatialCoverage":a.name ~ ", " ~ s.name,"creator":{"@type":"Organization","name":"U.S. Department of Housing and Urban Development"},"license":"https://www.usa.gov/government-works","temporalCoverage":"2026-10-01/2027-09-30","url":origin ~ base ~ path}|tojson }}</script>
-<script type="application/ld+json">{{ {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is the fair market rent in " ~ a.name ~ ", " ~ a.st ~ " for " ~ fy ~ "?","acceptedAnswer":{"@type":"Answer","text":"HUD's " ~ fy ~ " Fair Market Rent for " ~ a.name ~ " (" ~ a.area ~ ") is " ~ a.fmr[0]|usd ~ " for a studio, " ~ a.fmr[1]|usd ~ " for one bedroom, " ~ two|usd ~ " for two bedrooms, " ~ a.fmr[3]|usd ~ " for three and " ~ a.fmr[4]|usd ~ " for four, effective " ~ source.effective ~ ". These are gross rents including utilities."}},{"@type":"Question","name":"How much will a Section 8 voucher pay in " ~ a.name ~ "?","acceptedAnswer":{"@type":"Answer","text":"The housing authority sets a payment standard between 90% and 110% of FMR — for a 2-bedroom in " ~ a.name ~ " that is " ~ ((two or 0) * 0.9)|round|int|usd ~ " to " ~ ((two or 0) * 1.1)|round|int|usd ~ ". The voucher covers the standard minus roughly 30% of the household's adjusted income."}}]}|tojson }}</script>{% endblock %}
+{% block title %}{{ a.name }}, {{ a.st }} Fair Market Rent {{ fy }} — 2BR {{ two|usd }} | {{ site }}{% endblock %}
+{% block description %}HUD {{ fy }} Fair Market Rent for {{ a.name }}, {{ s.name }} ({{ a.area }}): studio {{ a.fmr[0]|usd }}, 1BR {{ a.fmr[1]|usd }}, 2BR {{ two|usd }}, 3BR {{ a.fmr[3]|usd }}, 4BR {{ a.fmr[4]|usd }}, effective {{ source.effective }}. Change from {{ fy_prev }}, illustrative 90–110% range{% if zrows %}, Small Area FMRs for {{ zrows|length }} ZIP codes{% endif %}. Confirm payment standards with your PHA.{% endblock %}
+{% block head %}<script type="application/ld+json">{{ {"@context":"https://schema.org","@type":"Dataset","name":a.name ~ ", " ~ a.st ~ " Fair Market Rent " ~ fy,"description":"FMR Finder page built from HUD's published " ~ fy ~ " Fair Market Rents: gross rent by bedroom count","spatialCoverage":a.name ~ ", " ~ s.name,"isBasedOn":source.fmr,"creator":{"@type":"Organization","name":site},"license":"https://www.usa.gov/government-works","temporalCoverage":fmr_period,"url":origin ~ base ~ path}|tojson }}</script>{% endblock %}
 {% block content %}
 <nav class="crumbs"><a href="{{ base }}">Home</a> › <a href="{{ base }}{{ s.path }}">{{ s.name }}</a> › {{ a.name }}</nav>
 <h1>{{ a.name }}, {{ a.st }} fair market rent</h1>
-<section class="sheet {{ 'mild' if a.chg2 is not none and a.chg2 >= 8 else 'balanced' }}" data-fmr='{{ a.fmr|tojson }}'>
-  <p class="sheet-label">{{ a.area }} · {{ fy }} · effective {{ source.effective }}</p>
-  <div class="sheet-num" aria-live="polite" aria-atomic="true"><span class="num" id="fmr-num">{{ two|usd }}</span><span class="pct" id="fmr-for">2 bedrooms / month</span></div>
-  <p class="sheet-title">{% if a.chg2 is not none %}{{ '+' if a.chg2 > 0 else '' }}{{ a.chg2 }}% from {{ fy_prev }} ({{ a.prev[2]|usd }}){% else %}New area for {{ fy }}{% endif %}{% if two %} · payment standard {{ (two * 0.9)|round|int|usd }}–{{ (two * 1.1)|round|int|usd }}{% endif %}</p>
-  <p class="sheet-text">{{ 'Above' if two and two > us_med2 else 'Below' }} the U.S. county median of {{ us_med2|usd }} for a 2-bedroom. {{ 'Metro FMR area' if a.metro else 'Non-metro county' }}{% if a.town %} (New England town, rent set at the town level){% endif %}.</p>
+<section class="sheet quiet" data-fmr='{{ a.fmr|tojson }}' data-prev='{{ a.prev|tojson }}'>
+  <p class="sheet-label">{{ a.area }} · {{ fy }}{% if upcoming %} · upcoming{% endif %} · effective {{ source.effective }}</p>
+  <div class="sheet-num" aria-live="polite" aria-atomic="true"><span class="num" data-fmr-num>{{ two|usd }}</span><span class="pct" data-fmr-for>2 bedrooms / month</span></div>
+  <p class="sheet-title" data-ps>{% if two %}Illustrative 90–110% range {{ (two * 0.9)|round|int|usd }}–{{ (two * 1.1)|round|int|usd }}{% endif %}{% if a.chg2 is not none %} · {{ '+' if a.chg2 > 0 else '' }}{{ a.chg2 }}% from {{ fy_prev }}{% endif %}</p>
+  <p class="sheet-text">Gross rent including tenant-paid utilities. The range is HUD's basic payment-standard band, not your PHA's adopted standard or your voucher payment; your PHA's effective date may differ. {{ 'Metro FMR area' if a.metro else 'Non-metro county' }}{% if a.town %} (town-level geography in HUD's file; the FMR may be shared with other towns){% endif %}. U.S. county median 2BR {{ us_med2|usd }}.</p>
   <div class="seg full" id="br" role="group" aria-label="Bedrooms">{% for b in range(5) %}<button type="button" data-b="{{ b }}" aria-pressed="{{ 'true' if b == 2 else 'false' }}">{{ ['Studio','1 BR','2 BR','3 BR','4 BR'][b] }}</button>{% endfor %}</div>
-  <table class="tbl spec mini"><thead><tr><th>Unit</th><th>{{ fy }}</th><th>{{ fy_prev }}</th><th>Change</th></tr></thead><tbody>
+  <table class="tbl spec mini rent-table"><caption class="muted small">HUD rents by bedroom count</caption><thead><tr><th>Unit</th><th>{{ fy }}</th><th>{{ fy_prev }}</th><th>Change</th></tr></thead><tbody>
     {% for b in range(5) %}<tr><th>{{ BR[b] }}</th><td>{{ a.fmr[b]|usd }}</td><td>{{ a.prev[b]|usd }}</td><td>{% if a.chg[b] is not none %}{{ '+' if a.chg[b] > 0 else '' }}{{ a.chg[b] }}%{% else %}—{% endif %}</td></tr>{% endfor %}
   </tbody></table>
-  <p class="sheet-actions"><a class="next" href="{{ base }}{{ s.path }}">All {{ s.name }} areas</a><a class="next" href="{{ base }}guide/payment-standard/">What a voucher pays</a></p>
+  <p class="sheet-actions"><a class="next" href="{{ base }}{{ s.path }}">All {{ s.name }} areas</a><a class="next" href="{{ base }}guide/payment-standard/">How payment standards work</a></p>
+  <p class="muted small">Source: <a href="{{ source.fmr }}" rel="noopener">HUD Fair Market Rent data</a>, {{ source.fmr_file }}, retrieved {{ source.fetched }}.</p>
 </section>
 <div class="ad-slot"><!-- ad: area --></div>
-{% if zrows %}<div class="sec"><div class="sec-h"><h2>Small Area FMRs by ZIP code</h2><span class="muted small">{{ zrows|length }} ZIPs in {{ a.area }}</span></div>
-<ul class="list fee">{% for z in zrows[:80] %}<li><a href="{{ base }}zip/{{ z.zip }}/"><span class="nm">{{ z.zip }}<small class="rule">studio {{ z.safmr[0]|usd }} · 1BR {{ z.safmr[1]|usd }} · 3BR {{ z.safmr[3]|usd }} · 4BR {{ z.safmr[4]|usd }}</small></span><span class="meta"><b>2BR {{ z.safmr[2]|usd }}</b>{% if z.vs_area[2] is not none and z.vs_area[2] != 0 %}<small>{{ '+' if z.vs_area[2] > 0 else '' }}{{ z.vs_area[2] }}% vs area</small>{% endif %}</span></a></li>{% endfor %}</ul>
-{% if zrows|length > 80 %}<p class="muted small">Showing 80 of {{ zrows|length }} — search a ZIP on the <a href="{{ base }}">home page</a> for the rest.</p>{% endif %}</div>{% endif %}
-{% if same %}<div class="sec"><div class="sec-h"><h2>Same FMR area</h2></div>
-<ul class="list">{% for x in same %}<li><a href="{{ base }}{{ x.path }}">{{ x.name }}<span class="meta">2BR {{ x.fmr[2]|usd }}</span></a></li>{% endfor %}</ul></div>{% endif %}
-{% if near %}<div class="sec"><div class="sec-h"><h2>{{ s.name }} areas with a similar 2BR rent</h2><a href="{{ base }}{{ s.path }}">All {{ s.areas|length }}</a></div>
-<ul class="list">{% for x in near %}<li><a href="{{ base }}{{ x.path }}">{{ x.name }}<span class="meta">{{ x.fmr[2]|usd }}</span></a></li>{% endfor %}</ul></div>{% endif %}
 <section class="prose">
   <h2>2-bedroom FMR, last 11 years</h2>
   <ul class="hist">{% for y, val in a.hist2br.items() %}<li><span>FY{{ y[2:] }}</span><b>{{ val|usd }}</b></li>{% endfor %}</ul>
   <p>HUD's fiscal year runs October to September, so the {{ fy }} figure applies from {{ source.effective }}. The FMR is the 40th-percentile gross rent (rent plus tenant-paid utilities) for standard-quality units, from Census ACS data trended forward with recent rent surveys. It is not a rent cap for private landlords. <a href="{{ base }}methodology/">Data & method</a></p>
 </section>
+{% if zrows %}<div class="sec"><div class="sec-h"><h2>Small Area FMRs by ZIP code</h2><span class="muted small">{{ zrows|length }} ZIPs in {{ a.area }}</span></div>
+<ul class="list fee">{% for z in zrows[:80] %}<li><a href="{{ base }}zip/{{ z.zip }}/"><span class="nm">{{ z.zip }}<small class="rule">studio {{ z.safmr[0]|usd }} · 1BR {{ z.safmr[1]|usd }} · 3BR {{ z.safmr[3]|usd }} · 4BR {{ z.safmr[4]|usd }}</small></span><span class="meta"><b>2BR {{ z.safmr[2]|usd }}</b>{% if z.vs_area[2] is not none and z.vs_area[2] != 0 %}<small>{{ '+' if z.vs_area[2] > 0 else '' }}{{ z.vs_area[2] }}% vs area</small>{% endif %}</span></a></li>{% endfor %}</ul>
+{% if zrows|length > 80 %}<details class="src"><summary>View the remaining {{ zrows|length - 80 }} ZIP codes</summary><ul class="list fee">{% for z in zrows[80:] %}<li><a href="{{ base }}zip/{{ z.zip }}/"><span class="nm">ZIP {{ z.zip }}</span><span class="meta"><b>2BR {{ z.safmr[2]|usd }}</b></span></a></li>{% endfor %}</ul></details>{% endif %}</div>{% endif %}
+{% if same %}<div class="sec"><div class="sec-h"><h2>Same FMR area</h2></div>
+<ul class="list">{% for x in same %}<li><a href="{{ base }}{{ x.path }}">{{ x.name }}<span class="meta">2BR {{ x.fmr[2]|usd }}</span></a></li>{% endfor %}</ul></div>{% endif %}
+{% if near %}<div class="sec"><div class="sec-h"><h2>{{ s.name }} areas with a similar 2BR rent</h2><a href="{{ base }}{{ s.path }}">All {{ s.areas|length }}</a></div>
+<ul class="list">{% for x in near %}<li><a href="{{ base }}{{ x.path }}">{{ x.name }}<span class="meta">{{ x.fmr[2]|usd }}</span></a></li>{% endfor %}</ul></div>{% endif %}
 <script src="{{ base }}static/app.js?v={{ v }}" defer></script>
 {% endblock %}

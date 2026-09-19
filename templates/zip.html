@@ -1,29 +1,28 @@
 {% extends "base.html" %}
 {% set z = lst[0] %}
-{% block title %}ZIP {{ zc }} fair market rent {{ fy }} — 2BR {{ z.safmr[2]|usd }}, studio to 4BR Small Area FMR & payment standard | {{ site }}{% endblock %}
-{% block description %}HUD {{ fy }} Small Area Fair Market Rent for ZIP code {{ zc }} ({{ z.area }}): studio {{ z.safmr[0]|usd }}, 1BR {{ z.safmr[1]|usd }}, 2BR {{ z.safmr[2]|usd }}, 3BR {{ z.safmr[3]|usd }}, 4BR {{ z.safmr[4]|usd }}, with the 90% and 110% payment standards a housing authority may adopt.{% endblock %}
-{% block head %}<script type="application/ld+json">{{ {"@context":"https://schema.org","@type":"Dataset","name":"ZIP " ~ zc ~ " Small Area Fair Market Rent " ~ fy,"description":"HUD " ~ fy ~ " SAFMR by bedroom count for ZIP code " ~ zc,"spatialCoverage":z.area,"creator":{"@type":"Organization","name":"U.S. Department of Housing and Urban Development"},"license":"https://www.usa.gov/government-works","url":origin ~ base ~ path}|tojson }}</script>{% endblock %}
+{% block title %}ZIP {{ zc }} Fair Market Rent {{ fy }} — 2BR {{ z.safmr[2]|usd }} | {{ site }}{% endblock %}
+{% block description %}HUD {{ fy }} Small Area Fair Market Rent for ZIP {{ zc }} ({{ z.area }}): studio {{ z.safmr[0]|usd }}, 1BR {{ z.safmr[1]|usd }}, 2BR {{ z.safmr[2]|usd }}, 3BR {{ z.safmr[3]|usd }}, 4BR {{ z.safmr[4]|usd }}, with illustrative 90–110% ranges. Confirm actual payment standards with your PHA.{% endblock %}
+{% block head %}<script type="application/ld+json">{{ {"@context":"https://schema.org","@type":"Dataset","name":"ZIP " ~ zc ~ " Small Area Fair Market Rent " ~ fy,"description":"FMR Finder page built from HUD's published " ~ fy ~ " SAFMR by bedroom count for ZIP code " ~ zc,"spatialCoverage":z.area,"isBasedOn":source.fmr,"creator":{"@type":"Organization","name":site},"license":"https://www.usa.gov/government-works","temporalCoverage":fmr_period,"url":origin ~ base ~ path}|tojson }}</script>{% endblock %}
 {% block content %}
-<nav class="crumbs"><a href="{{ base }}">Home</a> › {% if z.areas %}<a href="{{ base }}{{ z.areas[0].path }}">{{ z.areas[0].name }}, {{ z.areas[0].st }}</a> › {% endif %}ZIP {{ zc }}</nav>
+<nav class="crumbs"><a href="{{ base }}">Home</a> › ZIP {{ zc }}</nav>
 <h1>ZIP {{ zc }} fair market rent</h1>
-{% for z in lst %}
-<section class="sheet balanced" data-fmr='{{ z.safmr|tojson }}'>
-  <p class="sheet-label">{{ z.area }} · {{ fy }} Small Area FMR · effective {{ source.effective }}</p>
-  <div class="sheet-num" aria-live="polite" aria-atomic="true"><span class="num" id="fmr-num">{{ z.safmr[2]|usd }}</span><span class="pct" id="fmr-for">2 bedrooms / month</span></div>
-  <p class="sheet-title">Payment standard {{ z.ps90[2]|usd }}–{{ z.ps110[2]|usd }} for a 2-bedroom voucher</p>
-  <p class="sheet-text">{% if z.vs_area[2] is not none and z.vs_area[2] != 0 %}{{ '+' if z.vs_area[2] > 0 else '' }}{{ z.vs_area[2] }}% versus the area-wide FMR of {{ z.areas[0].fmr[2]|usd }} — {% if z.vs_area[2] > 0 %}a voucher stretches further here than the metro average{% else %}rents here sit below the metro average{% endif %}.{% else %}Same as the area-wide FMR.{% endif %}</p>
-  {% if loop.first %}<div class="seg full" id="br" role="group" aria-label="Bedrooms">{% for b in range(5) %}<button type="button" data-b="{{ b }}" aria-pressed="{{ 'true' if b == 2 else 'false' }}">{{ ['Studio','1 BR','2 BR','3 BR','4 BR'][b] }}</button>{% endfor %}</div>{% endif %}
-  <table class="tbl spec mini"><thead><tr><th>Unit</th><th>SAFMR</th><th>90%</th><th>110%</th></tr></thead><tbody>
+{% if lst|length > 1 %}<p class="sheet-text" style="margin:0 0 12px">HUD lists this ZIP in {{ lst|length }} FMR areas. The Small Area FMR is the same in each; confirm the applicable payment standard for the unit's address with its housing authority.</p>{% endif %}
+<section class="sheet quiet" data-fmr='{{ z.safmr|tojson }}' data-ref='{{ (z.areas[0].fmr if z.areas else none)|tojson }}'>
+  <p class="sheet-label">{{ z.area }}{% if lst|length > 1 %} and {{ lst|length - 1 }} more{% endif %} · {{ fy }} Small Area FMR{% if upcoming %} · upcoming{% endif %} · effective {{ source.effective }}</p>
+  <div class="sheet-num" aria-live="polite" aria-atomic="true"><span class="num" data-fmr-num>{{ z.safmr[2]|usd }}</span><span class="pct" data-fmr-for>2 bedrooms / month</span></div>
+  <p class="sheet-title" data-ps>Illustrative 90–110% range {{ z.ps90[2]|usd }}–{{ z.ps110[2]|usd }}</p>
+  <p class="sheet-text"><span data-vs>{% if z.vs_area[2] is not none and z.vs_area[2] != 0 %}{{ '+' if z.vs_area[2] > 0 else '' }}{{ z.vs_area[2] }}% versus the same-bedroom area-wide FMR of {{ z.areas[0].fmr[2]|usd }}.{% else %}Same as the area-wide FMR.{% endif %}</span> Gross rent including tenant-paid utilities. This range is not your PHA's verified payment standard or your voucher payment; your PHA's effective date may differ.</p>
+  <div class="seg full" id="br" role="group" aria-label="Bedrooms">{% for b in range(5) %}<button type="button" data-b="{{ b }}" aria-pressed="{{ 'true' if b == 2 else 'false' }}">{{ ['Studio','1 BR','2 BR','3 BR','4 BR'][b] }}</button>{% endfor %}</div>
+  <table class="tbl spec mini rent-table"><caption class="muted small">Illustrative percentages of HUD rent</caption><thead><tr><th>Unit</th><th>SAFMR</th><th>90%</th><th>110%</th></tr></thead><tbody>
     {% for b in range(5) %}<tr><th>{{ BR[b] }}</th><td>{{ z.safmr[b]|usd }}</td><td>{{ z.ps90[b]|usd }}</td><td>{{ z.ps110[b]|usd }}</td></tr>{% endfor %}
   </tbody></table>
-  <p class="sheet-actions">{% for a in z.areas[:3] %}<a class="next" href="{{ base }}{{ a.path }}">{{ a.name }}, {{ a.st }} FMR</a>{% endfor %}</p>
+  <p class="sheet-actions">{% for zz in lst %}{% for a in zz.areas[:1] %}<a class="next" href="{{ base }}{{ a.path }}">{{ a.area|truncate(38) }} area</a>{% endfor %}{% endfor %}</p>
+  <p class="muted small">Source: <a href="{{ source.fmr }}" rel="noopener">HUD Fair Market Rent data</a>, {{ source.safmr_file }}, retrieved {{ source.fetched }}. These are HUD rent benchmarks, not your housing agency's adopted payment standards.</p>
 </section>
-{% endfor %}
-{% if lst|length > 1 %}<p class="muted small">ZIP {{ zc }} spans {{ lst|length }} FMR areas; each is shown above. The housing authority uses the one covering the unit's address.</p>{% endif %}
 <div class="ad-slot"><!-- ad: zip --></div>
 <section class="prose">
   <h2>How to use this number</h2>
-  <p>A Housing Choice Voucher pays the payment standard (90–110% of the figure above, set by the local housing authority) minus about 30% of the household's adjusted monthly income. If the unit rents for more than the standard, the tenant pays the difference, capped at 40% of income at move-in. Landlords: the standard is the ceiling most voucher tenants can meet, so pricing at or under it fills a unit faster. <a href="{{ base }}guide/payment-standard/">Payment standards explained</a></p>
+  <p>Housing assistance is based on the lower of the applicable payment standard or the unit's gross rent, minus the household's total tenant payment. For voucher calculations, gross rent includes the PHA's utility allowance. Your housing authority determines your household's share and the applicable bedroom size. <a href="{{ base }}guide/payment-standard/">Payment standards explained</a></p>
 </section>
 <script src="{{ base }}static/app.js?v={{ v }}" defer></script>
 {% endblock %}

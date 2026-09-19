@@ -6,7 +6,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 HOST = "fmrfinder.com"
 KEY = (ROOT / "static/indexnow-key.txt").read_text().strip()
-urls = re.findall(r"<loc>([^<]+)</loc>", (ROOT / "dist/sitemap.xml").read_text())
+sm = (ROOT / "dist/sitemap.xml").read_text()
+if "<sitemapindex" in sm:  # expand the index into the page urls of each sub-sitemap
+    urls = [u for f in ROOT.glob("dist/sitemap-*.xml") for u in re.findall(r"<loc>([^<]+)</loc>", f.read_text())]
+else:
+    urls = re.findall(r"<loc>([^<]+)</loc>", sm)
 if len(sys.argv) > 1:
     urls = [u for u in urls if any(p in u for p in sys.argv[1:])]
 for i in range(0, len(urls), 10000):
