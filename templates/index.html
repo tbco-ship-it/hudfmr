@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Fair Market Rent by county and ZIP code — HUD {{ fy }} FMR lookup, studio to 4-bedroom | {{ site }}{% endblock %}
+{% block description %}Look up published HUD rent benchmarks by ZIP code or county. Compare bedroom sizes and learn how to confirm your housing authority's payment standard.{% endblock %}
 {% block head %}<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"{{ site }}","applicationCategory":"FinanceApplication","inLanguage":"en","url":"{{ origin }}{{ base }}","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
 <script>document.documentElement.classList.add('landing')</script>{% endblock %}
 {% block content %}
@@ -45,7 +46,7 @@
   <h2>What the number is</h2>
   <p>Fair Market Rent is HUD's estimate of the 40th-percentile gross rent for a modest, recently rented unit in an area — the rent at which 40% of units go for less. It resets every October 1 and is the yardstick for Housing Choice (Section 8) vouchers and several state programs (LIHTC rent limits use HUD's separate MTSP income limits). The U.S. median county 2-bedroom FMR for {{ fy }} is {{ us_med2|usd }}. <a href="{{ base }}guide/what-is-fair-market-rent/">Read the full explainer</a></p>
   <h2>Why the ZIP number differs from the county's</h2>
-  <p>In most large metros HUD now publishes Small Area FMRs by ZIP code, so a voucher stretches further in a higher-rent ZIP. Where a ZIP has no SAFMR, the metro-wide FMR applies. Either way the housing authority sets its payment standard, normally between 90% and 110% of the figure (exceptions exist), and your share of rent depends on that standard and your income, not the FMR itself. <a href="{{ base }}guide/payment-standard/">How payment standards work</a></p>
+  <p>HUD publishes ZIP-level Small Area FMRs, but publication alone does not mean your housing authority uses them. The applicable benchmark depends on HUD designation, your housing authority's adoption and any applicable exception policy; otherwise the metropolitan or nonmetropolitan county FMR generally applies. The housing authority sets its payment standard, normally between 90% and 110% of the benchmark (exceptions exist), and your share of rent depends on that standard and your income, not the FMR itself. <a href="{{ base }}guide/payment-standard/">How payment standards work</a></p>
 </section>
 </div>
 <script src="{{ base }}static/app.js?v={{ v }}" defer></script>

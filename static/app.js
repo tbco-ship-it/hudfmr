@@ -5,34 +5,41 @@
   const $ = id => document.getElementById(id);
   const usd = n => Number.isFinite(n) ? '$' + n.toLocaleString('en-US') : '—';
   const BRL = ['Studio', '1 bedroom', '2 bedrooms', '3 bedrooms', '4 bedrooms'];
+  // one normaliser for the query and the index: accents, punctuation (St. Louis, Miami-Dade, O'Brien) and spacing
+  const norm = value => String(value ?? '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[’']/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
+  const readBedroom = () => { const raw = new URLSearchParams(location.search).get('br'); const b = raw === null ? 2 : Number(raw); return Number.isInteger(b) && b >= 0 && b <= 4 ? b : 2; };
+  // keep the chosen bedroom size when moving between ZIP and area pages (links marked data-keep-br)
+  const syncBedroomLinks = b => { const u = new URL(location.href); if (b === 2) u.searchParams.delete('br'); else u.searchParams.set('br', String(b)); history.replaceState(null, '', u); document.querySelectorAll('a[data-keep-br]').forEach(l => { const t = new URL(l.getAttribute('href'), location.href); if (b === 2) t.searchParams.delete('br'); else t.searchParams.set('br', String(b)); l.href = t.href; }); };
   const segWire = (seg, onPick) => seg && seg.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; seg.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b)); onPick(+b.dataset.b); });
 
   // area / ZIP page: bedroom toggle re-renders FMR, the 90–110% range, the change and the area comparison for that bedroom size.
   const sheet = document.querySelector('.sheet[data-fmr]');
   if (sheet && $('br') && !$('q')) {
     const fmr = JSON.parse(sheet.dataset.fmr), prev = sheet.dataset.prev ? JSON.parse(sheet.dataset.prev) : null, ref = sheet.dataset.ref ? JSON.parse(sheet.dataset.ref) : null;
+    const low = sheet.dataset.ps90 ? JSON.parse(sheet.dataset.ps90) : null, high = sheet.dataset.ps110 ? JSON.parse(sheet.dataset.ps110) : null;  // build-time rounding, same as the table
     const fy = (document.querySelector('.sheet-label')?.textContent.match(/FY\d{4}/) || [''])[0];
     const render = b => {
       const val = fmr[b];
       sheet.querySelector('[data-fmr-num]').textContent = usd(val);
       sheet.querySelector('[data-fmr-for]').textContent = BRL[b] + ' / month';
-      let ps = val ? `Illustrative 90–110% range ${usd(Math.round(val * 0.9))}–${usd(Math.round(val * 1.1))}` : '';
+      let ps = val ? `Illustrative 90–110% range ${usd(low ? low[b] : Math.round(val * 0.9))}–${usd(high ? high[b] : Math.round(val * 1.1))}` : '';
       if (prev && prev[b] && val) { const ch = ((val - prev[b]) / prev[b] * 100).toFixed(1); ps += ` · ${+ch > 0 ? '+' : ''}${ch}% from last year`; }
       sheet.querySelector('[data-ps]').textContent = ps;
       const vs = sheet.querySelector('[data-vs]');
-      if (vs && ref && ref[b] && val) { const d = ((val - ref[b]) / ref[b] * 100).toFixed(1); vs.textContent = +d === 0 ? 'Same as the area-wide FMR.' : `${+d > 0 ? '+' : ''}${d}% versus the same-bedroom area-wide FMR of ${usd(ref[b])}.`; }
-      history.replaceState(null, '', b === 2 ? location.pathname : `${location.pathname}?br=${b}`);
+      if (vs) { if (ref && ref[b] && val) { const d = ((val - ref[b]) / ref[b] * 100).toFixed(1); vs.textContent = `${+d > 0 ? '+' : ''}${d}% versus the same-bedroom area-wide FMR of ${usd(ref[b])}.`; } else if (ref) vs.textContent = 'Area-wide comparison unavailable.'; }
+      syncBedroomLinks(b);
     };
     segWire($('br'), render);
-    const want = +(new URLSearchParams(location.search).get('br') || 2);
-    if (want !== 2 && fmr[want] != null) { $('br').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', +x.dataset.b === want)); render(want); }
+    const want = readBedroom();
+    if (want !== 2 && fmr[want] != null) { $('br').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', +x.dataset.b === want)); render(want); } else syncBedroomLinks(2);
     return;
   }
 
   // home: ZIP or county typeahead
   const input = $('q'); if (!input) return;
   const out = $('result'), menu = $('q-menu'), status = $('search-status');
-  let items = [], active = -1, current = null, br = 2;
+  let items = [], active = -1, current = null, br = readBedroom();
+  if (br !== 2) $('br').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', +x.dataset.b === br));
   segWire($('br'), b => { br = b; if (current) out.innerHTML = card(current); });
   const say = msg => { status.hidden = !msg; status.textContent = msg || ''; };
   // ZIPs load per leading digit on first use (static/zips/<d>.json, ~300 KB each); failures are not cached, so a retry works.
@@ -54,34 +61,36 @@
   say('Loading county search…');
   const areasReady = (async () => {
     for (let attempt = 0; ; attempt++) {
-      try { const r = await fetch(base + 'static/index.json?v=' + v); if (!r.ok) throw new Error(r.status); const IDX = await r.json(); A = IDX.areas.map(a => ({ kind: 'area', name: a[0], st: a[1], slug: a[2], area: a[3], fmr: a[4], prev2: a[5], town: !!a[6], q: (a[0] + ' ' + a[1] + ' ' + a[0] + a[1]).toLowerCase() })); say(''); return; }
+      try { const r = await fetch(base + 'static/index.json?v=' + v); if (!r.ok) throw new Error(r.status); const IDX = await r.json(); A = IDX.areas.map(a => ({ kind: 'area', name: a[0], st: a[1], slug: a[2], area: a[3], fmr: a[4], prev: a[5], town: !!a[6], state: a[7] || '', q: norm([a[0], a[1], a[3], a[7] || ''].join(' ')) })); say(''); return; }
       catch (e) { if (attempt < 2) { await new Promise(r => setTimeout(r, 1200 * (attempt + 1))); continue; } say('County search is unavailable — ZIP search still works, or browse by state.'); return; }
     }
   })();
-  const norm = s => (s || '').toLowerCase().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim();
   const EFFECTIVE = document.querySelector('.hero p')?.textContent.match(/effective ([^)]+)\)/)?.[1] || 'October 1';
   function card(c) {
     const f = c.fmr[br];
     const q = br === 2 ? '' : `?br=${br}`;
-    const note = `Gross rent including utilities. Illustrative 90–110% range ${usd(Math.round(f * 0.9))}–${usd(Math.round(f * 1.1))} — not your PHA's verified payment standard or your voucher payment.`;
-    if (c.kind === 'zip') return `<section class="sheet quiet"><p class="sheet-label">ZIP ${c.zip} · ${c.area} · Small Area FMR · effective ${EFFECTIVE}</p><div class="sheet-num"><span class="num">${usd(f)}</span><span class="pct">${BRL[br]} / month</span></div><p class="sheet-title">Studio ${usd(c.fmr[0])} · 1BR ${usd(c.fmr[1])} · 2BR ${usd(c.fmr[2])} · 3BR ${usd(c.fmr[3])} · 4BR ${usd(c.fmr[4])}</p><p class="sheet-text">${note}</p><p class="sheet-actions"><a class="next" href="${base}zip/${c.zip}/${q}">ZIP details & ranges</a>${c.path ? `<a class="next" href="${base}${c.path}${q}">${c.area.split(',')[0]} area FMR</a>` : ''}</p></section>`;
-    const ch = c.prev2 && c.fmr[2] ? ((c.fmr[2] - c.prev2) / c.prev2 * 100).toFixed(1) : null;
-    return `<section class="sheet quiet"><p class="sheet-label">${c.area} · effective ${EFFECTIVE}</p><div class="sheet-num"><span class="num">${usd(f)}</span><span class="pct">${BRL[br]} / month</span></div><p class="sheet-title">${c.name}, ${c.st}${ch !== null ? ` · 2BR ${+ch > 0 ? '+' : ''}${ch}% from last year` : ''}</p><p class="sheet-text">Studio ${usd(c.fmr[0])} · 1BR ${usd(c.fmr[1])} · 2BR ${usd(c.fmr[2])} · 3BR ${usd(c.fmr[3])} · 4BR ${usd(c.fmr[4])}. ${note}</p><p class="sheet-actions"><a class="next" href="${base}${c.st.toLowerCase()}/${c.slug}/${q}">All bedrooms, history & ZIPs</a></p></section>`;
+    const half = n => Math.floor(n + 0.5);
+    const note = `Gross rent including utilities. Illustrative 90–110% range ${usd(half(f * 0.9))}–${usd(half(f * 1.1))} — not your PHA's verified payment standard or your voucher payment.`;
+    const check = `<div class="voucher-check"><p><strong>Your housing authority's payment standard:</strong> not verified here.</p><a class="next" href="https://www.hud.gov/contactus/public-housing-contacts" rel="noopener">Find your housing authority</a></div>`;
+    if (c.kind === 'zip') return `<section class="sheet quiet"><p class="sheet-label">ZIP ${c.zip} · ${c.area} · Small Area FMR · effective ${EFFECTIVE}</p><div class="sheet-num"><span class="num">${usd(f)}</span><span class="pct">${BRL[br]} / month</span></div><p class="sheet-title">Studio ${usd(c.fmr[0])} · 1BR ${usd(c.fmr[1])} · 2BR ${usd(c.fmr[2])} · 3BR ${usd(c.fmr[3])} · 4BR ${usd(c.fmr[4])}</p><p class="sheet-text">${note}</p>${check}<p class="sheet-actions"><a class="next" href="${base}zip/${c.zip}/${q}">ZIP details & ranges</a>${c.path ? `<a class="next" href="${base}${c.path}${q}">${c.area.split(',')[0]} area FMR</a>` : ''}</p></section>`;
+    const pv = c.prev && c.prev[br];
+    const ch = pv && f ? ((f - pv) / pv * 100).toFixed(1) : null;  // change for the bedroom size on screen, not always 2BR
+    return `<section class="sheet quiet"><p class="sheet-label">${c.area} · effective ${EFFECTIVE}</p><div class="sheet-num"><span class="num">${usd(f)}</span><span class="pct">${BRL[br]} / month</span></div><p class="sheet-title">${c.name}, ${c.st}${ch !== null ? ` · ${BRL[br]} ${+ch > 0 ? '+' : ''}${ch}% from last year` : ''}</p><p class="sheet-text">Studio ${usd(c.fmr[0])} · 1BR ${usd(c.fmr[1])} · 2BR ${usd(c.fmr[2])} · 3BR ${usd(c.fmr[3])} · 4BR ${usd(c.fmr[4])}. ${note}</p>${check}<p class="sheet-actions"><a class="next" href="${base}${c.st.toLowerCase()}/${c.slug}/${q}">All bedrooms, history & ZIPs</a></p></section>`;
   }
   let seq = 0;
   async function open(q) {
     const nq = norm(q), my = ++seq;
     let empty = nq ? 'Nothing by that name. Try the ZIP code or the county name.' : 'Type a ZIP code or a county.';
     if (/^\d{1,5}$/.test(nq)) {
-      if (nq.length < 3) { items = []; menu.innerHTML = '<li class="empty">Keep typing the ZIP code…</li>'; menu.hidden = false; return; }
-      try { const part = await loadZips(nq[0]); if (my !== seq) return; items = part.filter(z => z.zip.startsWith(nq)).slice(0, 8); empty = 'No Small Area FMR for this ZIP — try the county name.'; }
-      catch (e) { if (my !== seq) return; items = []; empty = 'Couldn\'t load ZIP rents. Try again or browse by state.'; }
-    } else { if (!A.length) await areasReady; if (my !== seq) return; items = nq ? A.filter(a => a.q.includes(nq)).sort((a, b) => a.town - b.town || (b.fmr[2] || 0) - (a.fmr[2] || 0)).slice(0, 8) : []; }
+      if (nq.length < 3) { items = []; menu.innerHTML = '<li class="empty">Keep typing the ZIP code…</li>'; menu.hidden = false; input.setAttribute('aria-expanded', 'true'); input.removeAttribute('aria-activedescendant'); return; }
+      try { const part = await loadZips(nq[0]); if (my !== seq || document.activeElement !== input) return; items = part.filter(z => z.zip.startsWith(nq)).slice(0, 8); empty = 'No Small Area FMR for this ZIP — try the county name.'; }
+      catch (e) { if (my !== seq || document.activeElement !== input) return; items = []; empty = 'Couldn\'t load ZIP rents. Try again or browse by state.'; }
+    } else { if (!A.length) await areasReady; if (my !== seq || document.activeElement !== input) return; const tokens = nq.split(' ').filter(Boolean); items = tokens.length ? A.filter(a => tokens.every(t => a.q.includes(t))).sort((a, b) => a.town - b.town || (b.fmr[2] || 0) - (a.fmr[2] || 0)).slice(0, 8) : []; }
     menu.innerHTML = items.length ? items.map((c, i) => `<li role="option" id="q-option-${i}" data-i="${i}" aria-selected="${i === active}">${c.kind === 'zip' ? `ZIP ${c.zip}<small class="muted"> ${c.area}</small>` : `${c.name}, ${c.st}<small class="muted"> ${c.town ? 'town · ' : ''}2BR ${usd(c.fmr[2])}</small>`}</li>`).join('') : `<li class="empty">${empty}</li>`;
     menu.hidden = false; input.setAttribute('aria-expanded', 'true');
-    if (active >= 0 && items[active]) input.setAttribute('aria-activedescendant', `q-option-${active}`); else input.removeAttribute('aria-activedescendant');
+    if (active >= 0 && items[active]) { input.setAttribute('aria-activedescendant', `q-option-${active}`); $(`q-option-${active}`)?.scrollIntoView({ block: 'nearest' }); } else input.removeAttribute('aria-activedescendant');
   }
-  function close() { menu.hidden = true; active = -1; input.setAttribute('aria-expanded', 'false'); input.removeAttribute('aria-activedescendant'); }
+  function close() { ++seq; menu.hidden = true; active = -1; input.setAttribute('aria-expanded', 'false'); input.removeAttribute('aria-activedescendant'); }  // ++seq: a request started before the close must not reopen the list
   function leaveLanding() {
     const html = document.documentElement; if (!html.classList.contains('landing')) return;
     const stage = $('stage'), hero = stage.firstElementChild;
@@ -106,13 +115,14 @@
   input.addEventListener('focus', () => { setTimeout(() => input.select(), 0); open(input.value); });
   input.addEventListener('input', () => { active = -1; open(input.value); });
   input.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { close(); e.preventDefault(); return; }  // also while a lookup is still loading
     if (menu.hidden) return;
     if (e.key === 'ArrowDown') { active = Math.min(active + 1, items.length - 1); open(input.value); e.preventDefault(); }
     else if (e.key === 'ArrowUp') { active = Math.max(active - 1, 0); open(input.value); e.preventDefault(); }
     else if (e.key === 'Enter') { const it = items[active >= 0 ? active : 0]; if (it) choose(it); e.preventDefault(); }
-    else if (e.key === 'Escape') close();
   });
-  menu.addEventListener('mousedown', e => { const li = e.target.closest('li[data-i]'); if (li) { choose(items[+li.dataset.i]); e.preventDefault(); } });
+  menu.addEventListener('mousedown', e => { if (e.target.closest('li[data-i]')) e.preventDefault(); });
+  menu.addEventListener('click', e => { const li = e.target.closest('li[data-i]'); if (!li) return; const it = items[+li.dataset.i]; if (it) choose(it); });
   input.addEventListener('blur', () => setTimeout(close, 120));
   const rem = JSON.parse(localStorage.getItem('fmr.q') || 'null');
   if (rem && rem[0] === 'zip') await loadZips(rem[1][0]).catch(() => {}); else await areasReady;

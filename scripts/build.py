@@ -7,6 +7,8 @@ import json
 import shutil
 from collections import defaultdict
 from pathlib import Path
+from decimal import Decimal, ROUND_HALF_UP
+from statistics import median
 from xml.sax.saxutils import escape
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
@@ -39,8 +41,11 @@ def main():
     data = json.loads((ROOT / "data/fmr.json").read_text())
     areas, zips, source = data["areas"], data["zips"], data["source"]
     states = {}
+    pct_dollars = lambda v, f: None if v is None else int((Decimal(v) * Decimal(f)).quantize(Decimal("1"), rounding=ROUND_HALF_UP))  # one rounding rule, computed once
     for a in areas:
         a["path"] = f"{a['st'].lower()}/{a['slug']}/"
+        a["ps90"] = [pct_dollars(v, "0.9") for v in a["fmr"]]
+        a["ps110"] = [pct_dollars(v, "1.1") for v in a["fmr"]]
         a["chg"] = [chg(c, p) for c, p in zip(a["fmr"], a["prev"])]
         a["chg2"] = a["chg"][2]
         s = states.setdefault(a["st"], {"st": a["st"], "name": a["state"], "path": f"{a['st'].lower()}/", "areas": []})
@@ -48,7 +53,8 @@ def main():
     for s in states.values():
         s["areas"].sort(key=lambda a: -(a["fmr"][2] or 0))
         two = [a["fmr"][2] for a in s["areas"] if a["fmr"][2]]
-        s["med2"] = sorted(two)[len(two) // 2] if two else None
+        s["med2"] = round(median(two)) if two else None
+        s["n_fmr_areas"] = len({a["area_code"] for a in s["areas"]})
         s["max"], s["min"] = s["areas"][0], s["areas"][-1]
         s["n_towns"] = sum(1 for a in s["areas"] if a["town"])
     state_list = sorted(states.values(), key=lambda s: s["name"])
@@ -56,8 +62,7 @@ def main():
     ranked = sorted(counties_only, key=lambda a: -a["fmr"][2])
     movers_up = sorted([a for a in counties_only if a["chg2"] is not None], key=lambda a: -a["chg2"])[:60]
     movers_down = sorted([a for a in counties_only if a["chg2"] is not None], key=lambda a: a["chg2"])[:60]
-    all2 = sorted(a["fmr"][2] for a in counties_only)
-    us_med2 = all2[len(all2) // 2]
+    us_med2 = round(median(a["fmr"][2] for a in counties_only))
     # ZIP groups (a ZIP can sit in two FMR areas)
     by_zip = defaultdict(list)
     for z in zips:
@@ -87,16 +92,20 @@ def main():
         shutil.rmtree(DIST)
     DIST.mkdir()
     shutil.copytree(ROOT / "static", DIST / "static")
-    # search index: areas [name, st, slug, area, fmr[5], prev2, town?] ; zips [zip, area_code, safmr[5], area]
-    idx = {"areas": [[a["name"], a["st"], a["slug"], a["area"], a["fmr"], a["prev"][2], 1 if a["town"] else 0] for a in areas]}
+    # search index: areas [name, st, slug, area, fmr[5], prev[5], town?, state name] ; zips [zip, area_code, safmr[5], area]
+    idx = {"areas": [[a["name"], a["st"], a["slug"], a["area"], a["fmr"], a["prev"], 1 if a["town"] else 0, a["state"]] for a in areas]}
     (DIST / "static/index.json").write_text(json.dumps(idx, separators=(",", ":")))
     # ZIP index split by first digit (~300 KB each), loaded only when the user types digits; area names via a code table
-    codes = sorted({z["area_code"] for z in zips})
-    code_i = {c: i for i, c in enumerate(codes)}
-    code_meta = [[next((z["area"] for z in zips if z["area_code"] == c), ""), next((a["path"] for a in area_by_code.get(c, [])), "")] for c in codes]
+    area_name = {}
+    for z in zips:
+        area_name.setdefault(z["area_code"], z["area"])
     (DIST / "static/zips").mkdir()
-    for d in "0123456789":
-        part = [[z["zip"], code_i[z["area_code"]], z["safmr"]] for z in zips if z["zip"][0] == d]
+    for d in "0123456789":  # each shard carries only the area codes it uses
+        rows = [z for z in zips if z["zip"][0] == d]
+        used = sorted({z["area_code"] for z in rows})
+        local_i = {c: i for i, c in enumerate(used)}
+        code_meta = [[area_name.get(c, ""), next((a["path"] for a in area_by_code.get(c, [])), "")] for c in used]
+        part = [[z["zip"], local_i[z["area_code"]], z["safmr"]] for z in rows]
         (DIST / f"static/zips/{d}.json").write_text(json.dumps({"codes": code_meta, "zips": part}, separators=(",", ":")))
 
     urls = []
@@ -125,7 +134,10 @@ def main():
             zrows = [z for zc in a["zips"] for z in by_zip.get(zc, []) if z["area_code"] == a["area_code"]]
             write(a["path"], "area.html", s=s, a=a, same=same, near=near, zrows=zrows)
     for zc, lst in by_zip.items():
-        write(f"zip/{zc}/", "zip.html", zc=zc, lst=lst)
+        same_safmr = len({tuple(z["safmr"]) for z in lst}) == 1
+        write(f"zip/{zc}/", "zip.html", zc=zc, lst=lst, same_safmr=same_safmr)
+        (DIST / f"zip/{zc}/data.json").write_text(json.dumps({"zip": zc, "fiscal_year": source["fy"], "unit": "USD per month, gross rent", "source": {"file": source["safmr_file"], "url": source["fmr"], "retrieved": source["fetched"]},
+                                                              "records": [{k: z[k] for k in ("area_code", "area", "safmr", "ps90", "ps110")} for z in lst]}, separators=(",", ":")))
 
     chunks = [urls[i:i + 40000] for i in range(0, len(urls), 40000)]
     names = []

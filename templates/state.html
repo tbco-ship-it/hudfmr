@@ -1,16 +1,16 @@
 {% extends "base.html" %}
-{% block title %}{{ s.name }} fair market rent by county {{ fy }} — 2BR from {{ s.min.fmr[2]|usd }} to {{ s.max.fmr[2]|usd }} | {{ site }}{% endblock %}
+{% block title %}{{ s.name }} fair market rent by county{% if s.n_towns %} and town{% endif %} {{ fy }} — 2BR from {{ s.min.fmr[2]|usd }} to {{ s.max.fmr[2]|usd }} | {{ site }}{% endblock %}
 {% block description %}HUD {{ fy }} Fair Market Rents for every {{ s.name }} county{% if s.n_towns %} and town{% endif %}: 2-bedroom rents from {{ s.min.fmr[2]|usd }} ({{ s.min.name }}) to {{ s.max.fmr[2]|usd }} ({{ s.max.name }}), median {{ s.med2|usd }}. Studio to 4BR on each page.{% endblock %}
 {% block content %}
 <nav class="crumbs"><a href="{{ base }}">Home</a> › <a href="{{ base }}states/">States</a> › {{ s.name }}</nav>
-<h1>{{ s.name }} fair market rent by county</h1>
+<h1>{{ s.name }} fair market rent by county{% if s.n_towns %} and town{% endif %}</h1>
 <section class="sheet quiet">
-  <p class="sheet-label">{{ s.name }} · {{ fy }} · {{ s.areas|length }} FMR areas</p>
+  <p class="sheet-label">{{ s.name }} · {{ fy }} · {{ s.areas|length }} listed places · {{ s.n_fmr_areas }} HUD FMR areas</p>
   <div class="sheet-num"><span class="num">{{ s.med2|usd }}</span><span class="pct">median 2BR</span></div>
   <p class="sheet-title">From {{ s.min.fmr[2]|usd }} in {{ s.min.name }} to {{ s.max.fmr[2]|usd }} in {{ s.max.name }}</p>
-  <p class="sheet-text">U.S. county median {{ us_med2|usd }}. Effective {{ source.effective }}.</p>
+  <p class="sheet-text">Unweighted median of the listed county, county-equivalent and town 2-bedroom FMRs; places sharing a HUD FMR area have the same value. This is not a statewide estimate of rents paid. U.S. county median {{ us_med2|usd }}. Effective {{ source.effective }}.</p>
 </section>
 <div class="ad-slot"><!-- ad: state --></div>
 <div class="sec"><div class="sec-h"><h2>Highest 2-bedroom first</h2></div>
-<ul class="list fee">{% for a in s.areas %}<li><a href="{{ base }}{{ a.path }}"><span class="nm">{{ a.name }}<small class="rule">{{ a.area }} · studio {{ a.fmr[0]|usd }} · 1BR {{ a.fmr[1]|usd }} · 3BR {{ a.fmr[3]|usd }}</small></span><span class="meta"><b>{{ a.fmr[2]|usd }}</b>{% if a.chg2 is not none %}<small>{{ '+' if a.chg2 > 0 else '' }}{{ a.chg2 }}% vs {{ fy_prev }}</small>{% endif %}</span></a></li>{% endfor %}</ul></div>
+<ul class="list fee">{% for a in s.areas %}<li><a href="{{ base }}{{ a.path }}"><span class="nm">{{ a.name }}{% if a.town %} <small>town</small>{% endif %}</span><span class="meta"><b>{{ a.fmr[2]|usd }}</b>{% if a.chg2 is not none %}<small>{{ '+' if a.chg2 > 0 else '' }}{{ a.chg2 }}% vs {{ fy_prev }}</small>{% endif %}</span><small class="rule">{{ a.area }} · Studio {{ a.fmr[0]|usd }} · 1BR {{ a.fmr[1]|usd }} · 3BR {{ a.fmr[3]|usd }}</small></a></li>{% endfor %}</ul></div>
 {% endblock %}

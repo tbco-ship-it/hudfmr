@@ -672,3 +672,13 @@ header.top nav a{flex:none}
 .sheet.quiet{background:var(--surface);background-image:none}
 #result .rv,#result.rv{opacity:1;transform:none;filter:none;transition:none}
 details.src summary{cursor:pointer;color:var(--text-2);font-weight:600;font-size:.92rem;padding:8px 0}
+/* Review R2 2026-09-19: rule line spans the row, voucher-check block, accessible link/CTA colours */
+.list.fee a{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"name price" "rule rule";gap:4px 12px;min-height:64px}
+.list.fee .nm{grid-area:name;min-width:0}.list.fee .meta{grid-area:price}.list.fee a>.rule{grid-area:rule;margin:4px 0 0;line-height:1.5;overflow-wrap:anywhere}
+.voucher-check{margin-top:16px;padding-top:16px;border-top:1px solid var(--line,rgba(0,0,0,.08))}.voucher-check p{margin:0 0 8px}
+:root{--link:#1b64da;--action-bg:#1b64da}
+@media (prefers-color-scheme:dark){:root{--link:#4593fc}}
+a{color:var(--link)}
+.next:first-child:not(:only-child),.next:only-child{background:var(--action-bg);color:#fff}
+.next:first-child:not(:only-child):hover,.next:only-child:hover{background:#1857be;color:#fff}
+.voucher-check .next{background:var(--action-bg);color:#fff}
