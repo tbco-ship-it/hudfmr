@@ -35,6 +35,11 @@ def main():
         if not st:
             continue
         name = r["name"].strip()
+        if not name:
+            # HUD ships one unnamed Vermont cousub row (fips 5000724400, Burlington MSA). An empty name makes an empty
+            # slug → the page path "vt//" collapses onto the state hub and overwrites it. Skip rather than guess a name.
+            print(f"skip unnamed row fips={r['fips2027']} area={r[f'areaname{FY}']!r}")
+            continue
         cur, prev = ints(r, f"fmr{FY}"), ints(r, f"fmr{FY - 1}")
         hist = {f"20{y:02d}": ints(r, f"fmr{y:02d}")[2] for y in range(FY - 10, FY + 1)}  # 2BR, last 11 fiscal years
         a = {"fips": r["fips2027"], "st": st[1], "state": st[0], "name": name, "town": r["cousub"] != "99999", "area": r[f"areaname{FY}"].strip(),

@@ -118,7 +118,16 @@ def main():
 
     urls = []
 
+    written = set()
+
     def write(path, template, **ctx):
+        # A malformed path ("vt//" from an empty slug, or two records sharing one slug) silently overwrites another
+        # page's index.html; fail the build instead so the sitemap and the output stay one-to-one.
+        if path and (not path.endswith("/") or any(p in ("", ".", "..") for p in path[:-1].split("/"))):
+            raise ValueError(f"bad page path {path!r}")
+        if path in written:
+            raise ValueError(f"page path collision {path!r}")
+        written.add(path)
         out = DIST / path
         out.mkdir(parents=True, exist_ok=True)
         (out / "index.html").write_text(env.get_template(template).render(path=path, **ctx))
