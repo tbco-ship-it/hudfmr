@@ -11,6 +11,12 @@
 <noscript><link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"></noscript>
 <link rel="stylesheet" href="{{ base }}static/style.css?v={{ v }}">
 <link rel="icon" href="{{ base }}static/favicon.svg?v={{ v }}" type="image/svg+xml">
+<link rel="apple-touch-icon" href="{{ base }}static/apple-touch-icon.png?v={{ v }}">
+<link rel="manifest" href="{{ base }}static/manifest.webmanifest?v={{ v }}">
+<meta name="apple-mobile-web-app-title" content="FMR Finder">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#17171c" media="(prefers-color-scheme: dark)">
 {% if adsense_pub %}<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-{{ adsense_pub }}" crossorigin="anonymous"></script>{% endif %}
 {% if origin == "https://fmrfinder.com" %}<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "22cc2aa1d5fd46e38154879475868c5f"}'></script>{% endif %}
 {% block head %}{% endblock %}
@@ -33,5 +39,6 @@
   <p class="muted">Figures are HUD's published {{ fy }} Fair Market Rents and Small Area FMRs (effective {{ source.effective }}), gross rent including utilities. Your housing authority sets its own payment standard (normally within 90–110% of these) on its own schedule — its published figures govern your voucher.</p>
 </footer>
 <script src="{{ base }}static/ui.js?v={{ v }}" defer></script>
+<script src="{{ base }}static/a2hs.js?v={{ v }}" defer></script>
 </body>
 </html>
