@@ -57,12 +57,20 @@ def main():
         s["n_fmr_areas"] = len({a["area_code"] for a in s["areas"]})
         s["max"], s["min"] = s["areas"][0], s["areas"][-1]
         s["n_towns"] = sum(1 for a in s["areas"] if a["town"])
+        # FY-over-FY change, counties/towns with both years: median %, how many rose/fell, the extremes
+        ch = [a for a in s["areas"] if a["chg2"] is not None]
+        s["chg_med"] = round(median(a["chg2"] for a in ch), 1) if ch else None
+        s["n_up"], s["n_down"], s["n_flat"] = sum(1 for a in ch if a["chg2"] > 0), sum(1 for a in ch if a["chg2"] < 0), sum(1 for a in ch if a["chg2"] == 0)
+        s["top_up"] = max(ch, key=lambda a: a["chg2"]) if ch else None
+        s["top_down"] = min(ch, key=lambda a: a["chg2"]) if ch else None
     state_list = sorted(states.values(), key=lambda s: s["name"])
     counties_only = [a for a in areas if not a["town"] and a["fmr"][2]]
     ranked = sorted(counties_only, key=lambda a: -a["fmr"][2])
     movers_up = sorted([a for a in counties_only if a["chg2"] is not None], key=lambda a: -a["chg2"])[:60]
     movers_down = sorted([a for a in counties_only if a["chg2"] is not None], key=lambda a: a["chg2"])[:60]
     us_med2 = round(median(a["fmr"][2] for a in counties_only))
+    us_ch = [a["chg2"] for a in counties_only if a["chg2"] is not None]
+    us_chg = {"med": round(median(us_ch), 1), "n": len(us_ch), "up": sum(1 for c in us_ch if c > 0), "down": sum(1 for c in us_ch if c < 0), "flat": sum(1 for c in us_ch if c == 0)}
     # ZIP groups (a ZIP can sit in two FMR areas)
     by_zip = defaultdict(list)
     for z in zips:
@@ -86,7 +94,7 @@ def main():
     effective_date = dt.date(fy_number - 1, 10, 1)
     env.globals.update(upcoming=today < effective_date, fmr_period=f"{fy_number - 1}-10-01/{fy_number}-09-30")
     env.globals.update(site=SITE, base=base, origin=origin, today=today.isoformat(), v=v, adsense_pub=args.adsense_pub, BR=BR,
-                       states=states, state_list=state_list, n_areas=len(areas), n_zips=len(by_zip), source=source, us_med2=us_med2, fy=source["fy"], fy_prev=f"FY{int(source['fy'][2:]) - 1}")
+                       states=states, state_list=state_list, n_areas=len(areas), n_zips=len(by_zip), source=source, us_med2=us_med2, us_chg=us_chg, fy=source["fy"], fy_prev=f"FY{int(source['fy'][2:]) - 1}")
 
     if DIST.exists():
         shutil.rmtree(DIST)
@@ -123,6 +131,7 @@ def main():
     write("rankings/highest/", "ranking.html", title=f"Highest fair market rents in the U.S. ({source['fy']}, 2-bedroom)", rows=ranked[:100], kind="highest")
     write("rankings/lowest/", "ranking.html", title=f"Lowest fair market rents in the U.S. ({source['fy']}, 2-bedroom)", rows=ranked[-100:][::-1], kind="lowest")
     write("rankings/biggest-increases/", "ranking.html", title=f"Biggest FMR increases {fy_prev_label(source)} → {source['fy']} (2-bedroom)", rows=movers_up, kind="up")
+    write("rankings/change-by-state/", "change_states.html", rows=sorted(state_list, key=lambda s: -(s["chg_med"] if s["chg_med"] is not None else -999)))
     write("rankings/biggest-decreases/", "ranking.html", title=f"Biggest FMR decreases {fy_prev_label(source)} → {source['fy']} (2-bedroom)", rows=movers_down, kind="down")
     write("guide/what-is-fair-market-rent/", "guide_fmr.html")
     write("guide/payment-standard/", "guide_ps.html")

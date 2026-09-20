@@ -34,7 +34,7 @@
     <ul class="list">{% for a in top %}<li><a href="{{ base }}{{ a.path }}">{{ a.name }}, {{ a.st }}<span class="meta">{{ a.fmr[2]|usd }}</span></a></li>{% endfor %}</ul>
   </div>
   <div class="sec">
-    <div class="sec-h"><h2>Biggest jumps from {{ fy_prev }}</h2><a href="{{ base }}rankings/biggest-increases/">Top 60</a></div>
+    <div class="sec-h"><h2>Biggest jumps from {{ fy_prev }}</h2><a href="{{ base }}rankings/change-by-state/">By state</a></div>
     <ul class="list">{% for a in up %}<li><a href="{{ base }}{{ a.path }}">{{ a.name }}, {{ a.st }}<span class="meta">+{{ a.chg2 }}% · {{ a.fmr[2]|usd }}</span></a></li>{% endfor %}</ul>
   </div>
 </section>

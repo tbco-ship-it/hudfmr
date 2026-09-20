@@ -4,7 +4,7 @@
 {% block content %}
 <nav class="crumbs"><a href="{{ base }}">Home</a> › Rankings</nav>
 <h1>{{ title }}</h1>
-<p class="prose">U.S. county median 2BR {{ us_med2|usd }}. Also: <a href="{{ base }}rankings/highest/">highest</a> · <a href="{{ base }}rankings/lowest/">lowest</a> · <a href="{{ base }}rankings/biggest-increases/">biggest increases</a> · <a href="{{ base }}rankings/biggest-decreases/">biggest decreases</a>.</p>
+<p class="prose">U.S. county median 2BR {{ us_med2|usd }}. Also: <a href="{{ base }}rankings/highest/">highest</a> · <a href="{{ base }}rankings/lowest/">lowest</a> · <a href="{{ base }}rankings/biggest-increases/">biggest increases</a> · <a href="{{ base }}rankings/change-by-state/">change by state</a> · <a href="{{ base }}rankings/biggest-decreases/">biggest decreases</a>.</p>
 <div class="ad-slot"><!-- ad: ranking --></div>
 <ul class="list fee">{% for a in rows %}<li><a href="{{ base }}{{ a.path }}"><span class="nm">#{{ loop.index }} {{ a.name }}, {{ a.st }}<small class="rule">{{ a.area }}</small></span><span class="meta"><b>{{ a.fmr[2]|usd }}</b>{% if a.chg2 is not none %}<small>{{ '+' if a.chg2 > 0 else '' }}{{ a.chg2 }}% vs {{ fy_prev }}</small>{% endif %}</span></a></li>{% endfor %}</ul>
 {% endblock %}

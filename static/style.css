@@ -682,3 +682,16 @@ a{color:var(--link)}
 .next:first-child:not(:only-child),.next:only-child{background:var(--action-bg);color:#fff}
 .next:first-child:not(:only-child):hover,.next:only-child:hover{background:#1857be;color:#fff}
 .voucher-check .next{background:var(--action-bg);color:#fff}
+
+/* change-by-state table: 6 columns collapse into stacked rows on phones */
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tbl.chg td:last-child,.tbl.chg th:last-child{text-align:left}
+@media(max-width:640px){
+.tbl.chg{display:block}.tbl.chg thead{display:none}.tbl.chg tbody,.tbl.chg tr{display:block}
+.tbl.chg tr{padding:10px 4px;border-bottom:1px solid var(--line)}.tbl.chg tbody tr:last-child{border-bottom:none}
+.tbl.chg td{display:inline;padding:0;border:0;white-space:normal;line-height:1.6}
+.tbl.chg td:first-child{display:block;font-weight:700;margin-bottom:2px}
+.tbl.chg td+td+td::before{content:" · ";color:var(--muted)}
+.tbl.chg td[data-l]:not([data-l=""])::before{content:" · " attr(data-l) " ";color:var(--muted)}
+.tbl.chg td:empty::before{content:none}
+}

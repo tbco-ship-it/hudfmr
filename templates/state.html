@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}{{ s.name }} fair market rent by county{% if s.n_towns %} and town{% endif %} {{ fy }} — 2BR from {{ s.min.fmr[2]|usd }} to {{ s.max.fmr[2]|usd }} | {{ site }}{% endblock %}
+{% block title %}{{ s.name }} fair market rent by county{% if s.n_towns %} and town{% endif %} {{ fy }} — 2BR from {{ s.min.fmr[2]|usd }} to {{ s.max.fmr[2]|usd }}{% if s.chg_med is not none %}, {{ '+' if s.chg_med > 0 else '' }}{{ s.chg_med }}% vs {{ fy_prev }}{% endif %} | {{ site }}{% endblock %}
 {% block description %}HUD {{ fy }} Fair Market Rents for every {{ s.name }} county{% if s.n_towns %} and town{% endif %}: 2-bedroom rents from {{ s.min.fmr[2]|usd }} ({{ s.min.name }}) to {{ s.max.fmr[2]|usd }} ({{ s.max.name }}), median {{ s.med2|usd }}. Studio to 4BR on each page.{% endblock %}
 {% block content %}
 <nav class="crumbs"><a href="{{ base }}">Home</a> › <a href="{{ base }}states/">States</a> › {{ s.name }}</nav>
@@ -8,6 +8,7 @@
   <p class="sheet-label">{{ s.name }} · {{ fy }} · {{ s.areas|length }} listed places · {{ s.n_fmr_areas }} HUD FMR areas</p>
   <div class="sheet-num"><span class="num">{{ s.med2|usd }}</span><span class="pct">median 2BR</span></div>
   <p class="sheet-title">From {{ s.min.fmr[2]|usd }} in {{ s.min.name }} to {{ s.max.fmr[2]|usd }} in {{ s.max.name }}</p>
+  {% if s.chg_med is not none %}<p class="sheet-title">{{ fy_prev }} → {{ fy }}: median <strong>{{ '+' if s.chg_med > 0 else '' }}{{ s.chg_med }}%</strong> · {{ s.n_up }} up, {{ s.n_down }} down{% if s.n_flat %}, {{ s.n_flat }} unchanged{% endif %}{% if s.top_up and s.top_up.chg2 > 0 %} · largest <a href="{{ base }}{{ s.top_up.path }}">{{ s.top_up.name }}</a> +{{ s.top_up.chg2 }}%{% endif %} · <a href="{{ base }}rankings/change-by-state/">all states</a></p>{% endif %}
   <p class="sheet-text">Unweighted median of the listed county, county-equivalent and town 2-bedroom FMRs; places sharing a HUD FMR area have the same value. This is not a statewide estimate of rents paid. U.S. county median {{ us_med2|usd }}. Effective {{ source.effective }}.</p>
 </section>
 <div class="ad-slot"><!-- ad: state --></div>

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% set two = a.fmr[2] %}
-{% block title %}{{ a.name }}, {{ a.st }} Fair Market Rent {{ fy }} — 2BR {{ two|usd }} | {{ site }}{% endblock %}
+{% block title %}{{ a.name }}, {{ a.st }} Fair Market Rent {{ fy }} — 2BR {{ two|usd }}{% if a.chg2 is not none %} ({{ '+' if a.chg2 > 0 else '' }}{{ a.chg2 }}% vs {{ fy_prev }}){% endif %} | {{ site }}{% endblock %}
 {% block description %}{{ a.name }}, {{ s.name }}: {{ fy }} 2-bedroom Fair Market Rent {{ two|usd }}/month ({{ a.area }}), effective {{ source.effective }}. Studio–4BR rates, change from {{ fy_prev }}{% if zrows %}, Small Area FMRs for {{ zrows|length }} ZIP codes{% endif %}, and how to confirm your PHA's payment standard.{% endblock %}
 {% block head %}<script type="application/ld+json">{{ {"@context":"https://schema.org","@type":"Dataset","name":a.name ~ ", " ~ a.st ~ " Fair Market Rent " ~ fy,"description":"FMR Finder page built from HUD's published " ~ fy ~ " Fair Market Rents: gross rent by bedroom count","spatialCoverage":a.name ~ ", " ~ s.name,"isBasedOn":source.fmr,"creator":{"@type":"Organization","name":site},"license":"https://www.usa.gov/government-works","temporalCoverage":fmr_period,"url":origin ~ base ~ path}|tojson }}</script>{% endblock %}
 {% block content %}
