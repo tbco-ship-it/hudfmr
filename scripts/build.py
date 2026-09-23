@@ -86,6 +86,13 @@ def main():
         s["n_fmr_areas"] = len({a["area_code"] for a in s["areas"]})
         s["max"], s["min"] = s["areas"][0], s["areas"][-1]
         s["n_towns"] = sum(1 for a in s["areas"] if a["town"])
+        # income needed at HUD's 30%-of-income benchmark: FMR × 12 ÷ 0.30 = FMR × 40; hourly = ÷ 2,080 full-time hours
+        s["afford"] = []
+        for i, label in enumerate(BR):
+            vals = [a["fmr"][i] for a in s["areas"] if a["fmr"][i]]
+            if vals:
+                m = round(median(vals))
+                s["afford"].append({"br": label, "med": m, "income": m * 40, "hourly": m * 40 / 2080})
         # FY-over-FY change, counties/towns with both years: median %, how many rose/fell, the extremes
         ch = [a for a in s["areas"] if a["chg2"] is not None]
         s["chg_med"] = round(median(a["chg2"] for a in ch), 1) if ch else None

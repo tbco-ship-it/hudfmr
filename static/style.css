@@ -695,3 +695,7 @@ a{color:var(--link)}
 .tbl.chg td[data-l]:not([data-l=""])::before{content:" · " attr(data-l) " ";color:var(--muted)}
 .tbl.chg td:empty::before{content:none}
 }
+.tbl.afford{margin:0}
+.tbl.afford th,.tbl.afford td{padding:12px 10px}
+.tbl.afford td:not(:first-child),.tbl.afford th:not(:first-child){text-align:right;white-space:nowrap}
+@media(max-width:640px){.tbl.afford{font-size:.9rem}.tbl.afford th,.tbl.afford td{padding:11px 6px}}
