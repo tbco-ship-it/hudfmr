@@ -163,7 +163,7 @@ def main():
         urls.append((sm or path.split("/")[0] or "core", path))
 
     write("", "index.html", top=ranked[:8], up=movers_up[:8], down=movers_down[:8])
-    for page in ("about", "methodology", "privacy", "contact"):
+    for page in ("about", "methodology", "privacy", "terms", "contact"):
         write(f"{page}/", f"{page}.html")
     write("states/", "states.html")
     write("rankings/highest/", "ranking.html", title=f"Highest fair market rents in the U.S. ({source['fy']}, 2-bedroom)", rows=ranked[:100], kind="highest")
