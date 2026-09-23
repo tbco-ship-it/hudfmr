@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Free Fair Market Rent lookup for your website | {{ site }}{% endblock %}
+{% block description %}Add a free HUD Fair Market Rent lookup to your website: visitors type a ZIP code and see {{ fy }} rent by bedroom count and the income needed to afford it, for {{ '{:,}'.format(n_zips) }} ZIP codes. Copy one line of code.{% endblock %}
+{% block content %}
+<nav class="crumbs"><a href="{{ base }}">Home</a> › Embed</nav>
+<h1>Put a Fair Market Rent lookup on your site</h1>
+<div class="prose"><p>Landlords, housing authorities, property managers and renter blogs can let visitors check HUD's {{ fy }} Fair Market Rent for any of {{ '{:,}'.format(n_zips) }} ZIP codes, by bedroom count, with the income needed at 30% of income. It is free, has no ads, sets no cookies and follows the reader's light or dark mode. Paste the code below where you want it.</p></div>
+{% set code %}<iframe src="{{ origin }}{{ base }}embed/" title="Fair Market Rent lookup" width="100%" height="440" style="border:0;max-width:440px" loading="lazy"></iframe>
+<p style="font-size:12px;margin:4px 0 0">Rent data: <a href="{{ origin }}{{ base }}">FMR Finder — HUD Fair Market Rent by ZIP code</a></p>{% endset %}
+<div class="sec"><div class="sec-h"><h2>Code</h2></div>
+<textarea id="embed-code" readonly rows="5" style="width:100%;font:13px/1.4 ui-monospace,Menlo,monospace;padding:12px;border-radius:12px">{{ code }}</textarea>
+<p class="sheet-actions"><button class="next" type="button" id="copy-embed">Copy code</button></p></div>
+<div class="sec"><div class="sec-h"><h2>Preview</h2></div>{{ code|safe }}</div>
+<div class="prose"><p>Figures are HUD's {{ fy }} Small Area Fair Market Rents (gross rent including utilities). Income needed is rent × 40, the same 30%-of-income rule used on our state pages. A housing authority's own payment standard governs vouchers. <a href="{{ base }}methodology/">Data & method</a>.</p></div>
+<script>document.getElementById('copy-embed').addEventListener('click',function(){var t=document.getElementById('embed-code');t.select();navigator.clipboard?navigator.clipboard.writeText(t.value).then(()=>{this.textContent='Copied'}):document.execCommand('copy');});</script>
+{% endblock %}

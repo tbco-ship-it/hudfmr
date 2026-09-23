@@ -172,6 +172,9 @@ def main():
     write("", "index.html", top=ranked[:8], up=movers_up[:8], down=movers_down[:8])
     for page in ("about", "methodology", "privacy", "terms", "contact"):
         write(f"{page}/", f"{page}.html")
+    write("widget/", "widget.html")
+    (DIST / "embed").mkdir()
+    (DIST / "embed/index.html").write_text(env.get_template("embed.html").render(path="embed/"))  # iframe body: noindex, not in the sitemap
     write("states/", "states.html")
     write("rankings/highest/", "ranking.html", title=f"Highest fair market rents in the U.S. ({source['fy']}, 2-bedroom)", rows=ranked[:100], kind="highest")
     write("rankings/lowest/", "ranking.html", title=f"Lowest fair market rents in the U.S. ({source['fy']}, 2-bedroom)", rows=ranked[-100:][::-1], kind="lowest")
